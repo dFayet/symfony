@@ -162,6 +162,19 @@ class Router implements RouterInterface, RequestMatcherInterface
         if ($invalid) {
             throw new \InvalidArgumentException(sprintf('The Router does not support the following options: "%s".', implode('", "', $invalid)));
         }
+
+        // This prevent a BC break introduced in 4.3.0
+        // Fallback to PhpGeneratorDumper if the UrlGenerator and UrlGeneratorDumper are not consistent with each other
+        if (is_a($this->options['generator_class'], CompiledUrlGenerator::class, true) !==
+            is_a($this->options['generator_dumper_class'], CompiledUrlGeneratorDumper::class, true)) {
+            $this->options['generator_dumper_class'] = 'Symfony\\Component\\Routing\\Generator\\Dumper\\PhpGeneratorDumper';
+        }
+
+        // Fallback to PhpGeneratorDumper if the UrlMatcher and UrlMatcherDumper are not consistent with each other
+        if (is_a($this->options['matcher_class'], CompiledUrlMatcher::class, true) !==
+            is_a($this->options['matcher_dumper_class'], CompiledUrlMatcherDumper::class, true)) {
+            $this->options['matcher_dumper_class']  = 'Symfony\\Component\\Routing\\Matcher\\Dumper\\PhpMatcherDumper';
+        }
     }
 
     /**
